@@ -19,7 +19,7 @@ import com.hp.schemas.sm._7.GlcTEGStub.StringType;
 import dk.globicon.deg.webservice.TEGClient;
 import dk.globicon.teg.environment.TegFacadeContextListener;
 
-public class TegFacadeIncidentJustAchange {
+public class TegFacadeIncident {
 	public static final String CVS_ID = "$Id: TegFacadeIncident.java,v 1.5 2012-05-02 07:30:43 glc Exp $";
 	public static Logger log = Logger.getLogger(TegFacadeIncident.class);
 	private static String propertiesFile = TegFacadeContextListener.systemContextPath
@@ -192,6 +192,14 @@ public class TegFacadeIncidentJustAchange {
 				setResponseAttributtes(responseObj, response);
 
 			} catch (Exception e) {
+				
+				if (e != null && e.getMessage().equals("Transport error: 401 Error: Unauthorized")){
+					responseObj.setReturnCode("-1");
+					responseObj.setReturnMessage("Authorization error, please verify user/pw in connection.properties");
+					return responseObj;
+				}
+
+				
 				responseObj.setReturnCode("-1");
 				StackTraceElement[] stelems = e.getStackTrace();
 				String stacktraceStr = "";
@@ -199,7 +207,7 @@ public class TegFacadeIncidentJustAchange {
 					stacktraceStr = stacktraceStr.concat(stelems[i].toString()
 							+ "\n");
 				}
-				responseObj.setReturnMessage("Possible attachment error: "
+				responseObj.setReturnMessage("Error, please also see tomcat log. Exception: "
 						+ stacktraceStr);
 				e.printStackTrace();
 			}
@@ -618,16 +626,16 @@ public class TegFacadeIncidentJustAchange {
 						responseObject.setRsaIncidentId(array[1]);
 					}
 
-					System.out.println("PK111-->" + array[0]);
+					
 					if (array[0].equalsIgnoreCase("attachment")) {
 						String attachmentStr = array[1];
 						int idx = attachmentStr.indexOf("||DELIM||");
 						if (idx > -1) {
 							String filename = attachmentStr.substring(0, idx);
-							System.out.println("PK:" + filename + "END");
+							// System.out.println("PK:" + filename + "END");
 							String attachmentData = attachmentStr
 									.substring(idx + 9);
-							System.out.println("PK:" + attachmentData + "END");
+							// System.out.println("PK:" + attachmentData + "END");
 
 							// TODO
 							String[] filenames = new String[1];
