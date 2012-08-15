@@ -19,7 +19,7 @@ import com.hp.schemas.sm._7.GlcTEGStub.StringType;
 import dk.globicon.deg.webservice.TEGClient;
 import dk.globicon.teg.environment.TegFacadeContextListener;
 
-public class TegFacadeIncident {
+public class TegFacadeIncidentJustAchange {
 	public static final String CVS_ID = "$Id: TegFacadeIncident.java,v 1.5 2012-05-02 07:30:43 glc Exp $";
 	public static Logger log = Logger.getLogger(TegFacadeIncident.class);
 	private static String propertiesFile = TegFacadeContextListener.systemContextPath
