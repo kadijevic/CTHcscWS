@@ -1,0 +1,764 @@
+package dk.globicon.teg.change;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Properties;
+import java.util.UUID;
+
+import org.apache.axis2.AxisFault;
+import org.apache.log4j.Logger;
+
+import com.hp.schemas.sm._7.GlcTEGStub.CreateglcTEGResponse;
+import com.hp.schemas.sm._7.GlcTEGStub.MessageType;
+import com.hp.schemas.sm._7.GlcTEGStub.ResponseFields_type0;
+import com.hp.schemas.sm._7.GlcTEGStub.StringType;
+
+import dk.globicon.deg.webservice.TEGClient;
+import dk.globicon.teg.environment.TegFacadeContextListener;
+
+public class TegFacadeChange {
+	public static final String CVS_ID = "$Id: TegFacadeChange.java,v 1.5 2012-05-02 07:30:43 glc Exp $";
+	public static Logger log = Logger.getLogger(TegFacadeChange.class);
+	private static String propertiesFile = TegFacadeContextListener.systemContextPath
+			+ "/WEB-INF/classes/connection.properties";
+	private static String smHost = null;
+	private static String smPort = null;
+	private static String user = null;
+	private static String password = null;
+
+	
+/*
+	public static void main(String[] args) {
+		propertiesFile = "D:/Program Files/Apache Software Foundation/Apache Tomcat TEG 8480/webapps/TEGFacade/WEB-INF/classes/connection.properties";		
+		byte[] byteArray = new byte[] { 87, 79, 87, 46, 46, 46 };
+		ChangeResponse rsp = createChange("CSC001", "title", "daf", "Open", 123432434, "2", "2","chType", "templateId", "testdetail", "backout", "impactRegion", "impactSite", "2","relatedRSaid", "realtedCSCid", "filename1.txt", byteArray, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+		// deltaUpdate("IM10560", "text", 1232, "pk1.txt", byteArray, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+		System.out.println(rsp.getReturnMessage());
+		System.out.print("DONE");
+	}
+*/	
+	private static String checkFilename(String f){
+		if ( f.equalsIgnoreCase("?") ){
+			return "Invalid filename. Question mark not allowed";
+		}
+		if ( f.toLowerCase().endsWith(".bat") ) {
+			return "Invalid filename. .bat extension not allowed";			
+		}
+		if ( f.toLowerCase().endsWith(".exe") ) {
+			return "Invalid filename. .exe extension not allowed";						
+		}
+		if ( f.toLowerCase().endsWith(".cmd") ) {
+			return "Invalid filename. .cmd extension not allowed";					
+		}
+		return "";
+	}
+	
+	
+	// public static ChangeResponse createChange(String CscChangeId,
+	// String title, String description, String status, long openDate,
+	// String impact, String urgency, String ci, String[] fileNames,
+	// String[] dataTypes, byte[][] attachmentDatas) {
+	public static ChangeResponse createChange(String cscChangeId,
+			String title, String description, String status, long reqStartDate, String impact, String urgency, String changeType, String templateId, String testDetail, String backoutDetail, String impactRegion, String impactSite, String risk, String relatedRSAid, String relatedCSCid, String fileName1,
+			byte[] attachmentData1, String fileName2,
+			byte[] attachmentData2, String fileName3,
+			byte[] attachmentData3, String fileName4,
+			byte[] attachmentData4, String fileName5,
+			byte[] attachmentData5, String fileName6,
+			byte[] attachmentData6, String fileName7,
+			byte[] attachmentData7, String fileName8,
+			byte[] attachmentData8, String fileName9,
+			byte[] attachmentData9) {
+
+		// just creating a dummy one, so that in case we later want to
+		// re-introduce the dataTypes array, it will then be easier
+
+		ChangeResponse responseObj = TegFacadeChange.loadProperties();
+		if (!responseObj.getReturnCode().equals("0")) {
+			return responseObj;
+		}
+
+		TEGClient tegClient = null;
+
+		try {
+			tegClient = new TEGClient(smHost, smPort, user, password,
+					"createChange");
+		} catch (AxisFault e1) {
+			responseObj.setReturnMessage(e1.getMessage());
+		}
+
+		ArrayList<String> dataArray = new ArrayList<String>();
+		dataArray.add("cscChangeId=" + cscChangeId);
+		dataArray.add("title=" + title);
+		dataArray.add("description=" + description);
+		dataArray.add("status=" + status);
+		dataArray.add("reqStartDate=" + reqStartDate);
+		dataArray.add("impact=" + impact);
+		dataArray.add("urgency=" + urgency);
+		dataArray.add("changeType=" + changeType);
+		dataArray.add("templateId=" + templateId);
+		dataArray.add("testDetail=" + testDetail);
+		dataArray.add("backoutDetail=" + backoutDetail);
+		dataArray.add("impactRegion=" + impactRegion);
+		dataArray.add("impactSite=" + impactSite);
+		dataArray.add("risk=" + risk);
+		dataArray.add("relatedCSCid=" + relatedCSCid);
+		dataArray.add("relatedRSAid=" + relatedRSAid);
+		
+		
+		String[] data = (String[]) dataArray.toArray(new String[dataArray
+				.size()]);
+
+		if (tegClient != null) {
+
+			try {
+				tegClient.setRequestFields(data);
+
+				if (fileName1 == null ) { fileName1 = ""; }
+				if (fileName2 == null ) { fileName2 = ""; }
+				if (fileName3 == null ) { fileName3 = ""; }
+				if (fileName4 == null ) { fileName4 = ""; }
+				if (fileName5 == null ) { fileName5 = ""; }
+				if (fileName6 == null ) { fileName6 = ""; }
+				if (fileName7 == null ) { fileName7 = ""; }
+				if (fileName8 == null ) { fileName8 = ""; }
+				if (fileName9 == null ) { fileName9 = ""; }
+
+				fileName1 = fileName1.trim();
+				fileName2 = fileName2.trim();
+				fileName3 = fileName3.trim();
+				fileName4 = fileName4.trim();
+				fileName5 = fileName5.trim();
+				fileName6 = fileName6.trim();
+				fileName7 = fileName7.trim();
+				fileName8 = fileName8.trim();
+				fileName9 = fileName9.trim();
+				String [] filenames = {fileName1, fileName2, fileName3, fileName4, fileName5, fileName6, fileName7, fileName8, fileName9};
+				
+				for (int i = 0; i < filenames.length; i++) {
+					if ( checkFilename(filenames[i]) != "" ) {
+						responseObj.setReturnCode("-1");
+						responseObj.setReturnMessage("Attachment error for filename" + (i+1) + ": " + checkFilename(filenames[i]));
+						return responseObj;
+					}
+					
+				}
+				
+				
+				tegClient.setId(UUID.randomUUID().toString());
+				if (fileName1 != "" && attachmentData1 != null){
+					tegClient.setAttachment(fileName1, "txt", attachmentData1);
+				}
+				if (fileName2 != "" && attachmentData2 != null){
+					tegClient.setAttachment(fileName2, "txt", attachmentData2);
+				}
+				if (fileName3 != "" && attachmentData3 != null){
+					tegClient.setAttachment(fileName3, "txt", attachmentData3);
+				}
+				if (fileName4 != "" && attachmentData4 != null){
+					tegClient.setAttachment(fileName4, "txt", attachmentData4);
+				}
+				if (fileName5 != "" && attachmentData5 != null){
+					tegClient.setAttachment(fileName5, "txt", attachmentData5);
+				}
+				if (fileName6 != "" && attachmentData6 != null){
+					tegClient.setAttachment(fileName6, "txt", attachmentData6);
+				}
+				if (fileName7 != "" && attachmentData7 != null){
+					tegClient.setAttachment(fileName7, "txt", attachmentData7);
+				}
+				if (fileName8 != "" && attachmentData8 != null){
+					tegClient.setAttachment(fileName8, "txt", attachmentData8);
+				}
+				if (fileName9 != "" && attachmentData9 != null){
+					tegClient.setAttachment(fileName9, "txt", attachmentData9);
+				}
+
+				// 20120520-pk removed dataTypes from interface and below we
+				// hard code
+				// to 'txt'
+				// HPSM doesn't care and displays the right icon anyway based on
+				// the
+				// filenmae extension
+				/*
+				 * String check = checkAttachmentDataIsValid(fileNames,
+				 * dataTypes, attachmentDatas); if (check.equalsIgnoreCase(""))
+				 * { for (int i = 0; i < fileNames.length; i++) {
+				 * 
+				 * tegClient.setAttachment(fileNames[i], dataTypes[i],
+				 * attachmentDatas[i]); }
+				 * 
+				 * CreateglcTEGResponse response = tegClient.submitRequest();
+				 * setResponseAttributtes(responseObj, response); } else {
+				 * responseObj.setReturnCode("-1");
+				 * responseObj.setReturnMessage(check); }
+				 */
+				CreateglcTEGResponse response = tegClient.submitRequest();
+				setResponseAttributtes(responseObj, response);
+
+			} catch (Exception e) {
+				
+				if (e != null && e.getMessage() != null && e.getMessage().equals("Transport error: 401 Error: Unauthorized")){
+					responseObj.setReturnCode("-1");
+					responseObj.setReturnMessage("Authorization error, please verify user/pw in connection.properties");
+					return responseObj;
+				}
+
+				
+				responseObj.setReturnCode("-1");
+				StackTraceElement[] stelems = e.getStackTrace();
+				String stacktraceStr = "";
+				for (int i = 0; i < stelems.length; i++) {
+					stacktraceStr = stacktraceStr.concat(stelems[i].toString()
+							+ "\n");
+				}
+				responseObj.setReturnMessage("Error, please also see tomcat log and sm.log. Exception: "
+						+ stacktraceStr);
+				e.printStackTrace();
+			}
+
+		}
+		return responseObj;
+	}
+
+	
+	/*
+	private static String checkAttachmentDataIsValidOBSOLETE(
+			String[] fileNames, String[] dataTypes, byte[][] attachmentDatas) {
+		String ret = "";
+
+		if ((fileNames == null || fileNames.length == 0)
+				&& (dataTypes == null || dataTypes.length == 0)
+				&& (attachmentDatas == null || attachmentDatas.length == 0)) {
+			// all empty, thats fine, sicne attachment is not mandatory
+			return ret;
+		}
+
+		if (fileNames == null || fileNames.length == 0) {
+			ret += "Filenames are empty. ";
+		}
+		if (dataTypes == null || dataTypes.length == 0) {
+			ret += "DataTypes are empty. ";
+		}
+		if (attachmentDatas == null || attachmentDatas.length == 0) {
+			ret += "AttachmentDatas are empty. ";
+		}
+		if (fileNames.length != dataTypes.length
+				|| dataTypes.length != attachmentDatas.length) {
+			ret += "There is a mismatch between the length of filenames ";
+			ret += " (" + fileNames.length + "), datatypes";
+			ret += " (" + dataTypes.length + ") and attachmentDatas ";
+			ret += " (" + attachmentDatas.length + "). ";
+		}
+		return ret;
+	}
+
+	*/
+
+	public static ChangeResponse updateChange(String cscChangeId, String rsaChangeID, long scheduledStartDate, long scheduledEndDate, long actualStartDate, long actualEndDate, String status ) {
+
+		TEGClient tegClient = null;
+		ChangeResponse responseObj = TegFacadeChange.loadProperties();
+		if (!responseObj.getReturnCode().equals("0")) {
+			return responseObj;
+		}
+
+		try {
+			tegClient = new TEGClient(smHost, smPort, user, password,
+					"updateChange");
+		} catch (AxisFault e1) {
+			responseObj.setReturnMessage(e1.getMessage());
+		}
+
+		ArrayList<String> dataArray = new ArrayList<String>();
+		dataArray.add("cscChangeId=" + cscChangeId);
+		dataArray.add("rsaChangeID=" + rsaChangeID);
+		dataArray.add("status=" + status);
+		dataArray.add("scheduledStartDate=" + scheduledStartDate);
+		dataArray.add("scheduledEndDate=" + scheduledEndDate);		
+		dataArray.add("actualStartDate=" + actualStartDate);
+		dataArray.add("actualEndDate=" + actualEndDate);
+
+		String[] data = (String[]) dataArray.toArray(new String[dataArray
+				.size()]);
+
+		if (tegClient != null) {
+
+			try {
+				tegClient.setRequestFields(data);
+
+				tegClient.setId(UUID.randomUUID().toString());
+
+				CreateglcTEGResponse response = tegClient.submitRequest();
+				setResponseAttributtes(responseObj, response);
+
+			} catch (Exception e) {
+				responseObj.setReturnMessage(e.getMessage());
+				e.printStackTrace();
+			}
+
+		}
+
+		return responseObj;
+	}
+
+	// public static ChangeResponse deltaUpdate(String RsaChangeID,
+	// String text, long date, String[] fileNames, String[] dataTypes,
+	// byte[][] attachmentDatas) {
+	public static ChangeResponse deltaUpdate(String cscChangeId, String rsaChangeID, String text, String fileName1,
+			byte[] attachmentData1, String fileName2,
+			byte[] attachmentData2, String fileName3,
+			byte[] attachmentData3, String fileName4,
+			byte[] attachmentData4, String fileName5,
+			byte[] attachmentData5, String fileName6,
+			byte[] attachmentData6, String fileName7,
+			byte[] attachmentData7, String fileName8,
+			byte[] attachmentData8, String fileName9,
+			byte[] attachmentData9) {
+
+		TEGClient tegClient = null;
+		ChangeResponse responseObj = TegFacadeChange.loadProperties();
+		if (!responseObj.getReturnCode().equals("0")) {
+			return responseObj;
+		}
+		/*
+		smHost = "localhost";
+		smPort = "13080";
+		user = "falcon";
+		password = "";
+		*/
+		
+		try {
+			tegClient = new TEGClient(smHost, smPort, user, password,
+					"deltaUpdate");
+		} catch (AxisFault e1) {
+			responseObj.setReturnMessage(e1.getMessage());
+		}
+
+		ArrayList<String> dataArray = new ArrayList<String>();
+		dataArray.add("rsaChangeID=" + rsaChangeID);
+		dataArray.add("cscChangeId=" + cscChangeId);
+		dataArray.add("text=" + text);
+
+		String[] data = (String[]) dataArray.toArray(new String[dataArray
+				.size()]);
+
+		if (tegClient != null) {
+
+			try {
+				tegClient.setRequestFields(data);
+
+				tegClient.setId(UUID.randomUUID().toString());
+				
+				if (fileName1 == null ) { fileName1 = ""; }
+				if (fileName2 == null ) { fileName2 = ""; }
+				if (fileName3 == null ) { fileName3 = ""; }
+				if (fileName4 == null ) { fileName4 = ""; }
+				if (fileName5 == null ) { fileName5 = ""; }
+				if (fileName6 == null ) { fileName6 = ""; }
+				if (fileName7 == null ) { fileName7 = ""; }
+				if (fileName8 == null ) { fileName8 = ""; }
+				if (fileName9 == null ) { fileName9 = ""; }
+				
+				fileName1 = fileName1.trim();
+				fileName2 = fileName2.trim();
+				fileName3 = fileName3.trim();
+				fileName4 = fileName4.trim();
+				fileName5 = fileName5.trim();
+				fileName6 = fileName6.trim();
+				fileName7 = fileName7.trim();
+				fileName8 = fileName8.trim();
+				fileName9 = fileName9.trim();
+				
+				String [] filenames = {fileName1, fileName2, fileName3, fileName4, fileName5, fileName6, fileName7, fileName8, fileName9};
+				
+				for (int i = 0; i < filenames.length; i++) {
+					if ( checkFilename(filenames[i]) != "" ) {
+						responseObj.setReturnCode("-1");
+						responseObj.setReturnMessage("Attachment error for filename" + (i+1) + ": " + checkFilename(filenames[i]));
+						return responseObj;
+					}
+					
+				}
+				
+				// 20120520-pk removed dataTypes from interface and below we hard code
+				// to 'txt'
+				// HPSM doesn't care and displays the right icon anyway based on the
+				// filenmae extension
+
+				if (fileName1 != "" && attachmentData1 != null){
+					tegClient.setAttachment(fileName1, "txt", attachmentData1);
+				}
+				if (fileName2 != "" && attachmentData2 != null){
+					tegClient.setAttachment(fileName2, "txt", attachmentData2);
+				}
+				if (fileName3 != "" && attachmentData3 != null){
+					tegClient.setAttachment(fileName3, "txt", attachmentData3);
+				}
+				if (fileName4 != "" && attachmentData4 != null){
+					tegClient.setAttachment(fileName4, "txt", attachmentData4);
+				}
+				if (fileName5 != "" && attachmentData5 != null){
+					tegClient.setAttachment(fileName5, "txt", attachmentData5);
+				}
+				if (fileName6 != "" && attachmentData6 != null){
+					tegClient.setAttachment(fileName6, "txt", attachmentData6);
+				}
+				if (fileName7 != "" && attachmentData7 != null){
+					tegClient.setAttachment(fileName7, "txt", attachmentData7);
+				}
+				if (fileName8 != "" && attachmentData8 != null){
+					tegClient.setAttachment(fileName8, "txt", attachmentData8);
+				}
+				if (fileName9 != "" && attachmentData9 != null){
+					tegClient.setAttachment(fileName9, "txt", attachmentData9);
+				}
+				CreateglcTEGResponse response = tegClient.submitRequest();
+				setResponseAttributtes(responseObj, response);
+
+				
+				
+			} catch (Exception e) {
+				responseObj.setReturnMessage(e.getMessage());
+				e.printStackTrace();
+			}
+
+		}
+
+		return responseObj;
+	}
+
+	public static ChangeResponse requestApproval(
+			String cscChangeId, String rsaChangeID, String text) {
+
+		TEGClient tegClient = null;
+		ChangeResponse responseObj = TegFacadeChange.loadProperties();
+		if (!responseObj.getReturnCode().equals("0")) {
+			return responseObj;
+		}
+
+		try {
+			tegClient = new TEGClient(smHost, smPort, user, password,
+					"updateChangeAssignment");
+		} catch (AxisFault e1) {
+			responseObj.setReturnMessage(e1.getMessage());
+		}
+
+		ArrayList<String> dataArray = new ArrayList<String>();
+		dataArray.add("cscChangeId=" + cscChangeId);
+		dataArray.add("rsaChangeID=" + rsaChangeID);
+		dataArray.add("text=" + text);
+
+		String[] data = (String[]) dataArray.toArray(new String[dataArray
+				.size()]);
+
+		if (tegClient != null) {
+
+			try {
+				tegClient.setRequestFields(data);
+
+				tegClient.setId(UUID.randomUUID().toString());
+
+				CreateglcTEGResponse response = tegClient.submitRequest();
+				setResponseAttributtes(responseObj, response);
+
+			} catch (Exception e) {
+				responseObj.setReturnMessage(e.getMessage());
+				e.printStackTrace();
+			}
+
+		}
+
+		return responseObj;
+	}
+
+	// public static ChangeResponse getChange(String id) {
+	//
+	// String message = null;
+	// TEGClient tegClient = null;
+	// ChangeResponse responseObj = TegFacadeChange.loadProperties();
+	// if (!responseObj.getReturnCode().equals("0")) {
+	// return responseObj;
+	// }
+	//
+	// try {
+	// tegClient = new TEGClient(smHost, smPort, user, password,
+	// "getChange");
+	// } catch (AxisFault e1) {
+	// message = e1.getMessage();
+	// }
+	//
+	// ArrayList<String> dataArray = new ArrayList<String>();
+	// dataArray.add("id=" + id);
+	//
+	// String[] data = (String[]) dataArray.toArray(new String[dataArray
+	// .size()]);
+	//
+	// if (tegClient != null) {
+	//
+	// try {
+	// tegClient.setRequestFields(data);
+	//
+	// tegClient.setId(UUID.randomUUID().toString());
+	//
+	// CreateglcTEGResponse response = tegClient.submitRequest();
+	// // MessageType[] messages = response.getMessages().getMessage();
+	//
+	// ResponseFields_type0 responses = response.getModel()
+	// .getInstance().getResponseFields();
+	// String[] responseMessages = new String[0];
+	//
+	// if (responses != null) {
+	// StringType[] messages = responses.getResponseFields();
+	// responseMessages = new String[messages.length];
+	//
+	// for (int i = 0; i < messages.length; i++) {
+	// responseMessages[i] = messages[i].getString();
+	// }
+	// }
+	//
+	// message = response.getModel().getInstance().getRspRc()
+	// .getString()
+	// + " - "
+	// + response.getModel().getInstance().getRspMessage();
+	//
+	// responseObj.setReturnCode(response.getModel().getInstance()
+	// .getRspRc().getString());
+	// responseObj.setReturnMessages(responseMessages);
+	//
+	// } catch (Exception e) {
+	// message = e.getMessage();
+	// e.printStackTrace();
+	// }
+	//
+	// }
+	//
+	// responseObj.setReturnMessage(message);
+	//
+	// return responseObj;
+	// }
+	
+/*	
+	public static ChangeResponse getAttachmentsByIMid(String id) {
+
+		String message = null;
+		TEGClient tegClient = null;
+		ChangeResponse responseObj = TegFacadeChange.loadProperties();
+		if (!responseObj.getReturnCode().equals("0")) {
+			return responseObj;
+		}
+
+		try {
+			tegClient = new TEGClient(smHost, smPort, user, password,
+					"getAttachmentsByIMid");
+		} catch (AxisFault e1) {
+			message = e1.getMessage();
+		}
+
+		ArrayList<String> dataArray = new ArrayList<String>();
+		dataArray.add("id=" + id);
+
+		String[] data = (String[]) dataArray.toArray(new String[dataArray
+				.size()]);
+
+		if (tegClient != null) {
+
+			try {
+				tegClient.setRequestFields(data);
+
+				tegClient.setId(UUID.randomUUID().toString());
+
+				CreateglcTEGResponse response = tegClient.submitRequest();
+
+				setResponseAttributtes(responseObj, response);
+
+				ResponseFields_type0 responses = response.getModel()
+						.getInstance().getResponseFields();
+				String[] responseMessages = new String[0];
+
+				if (responses != null) {
+					StringType[] messages = responses.getResponseFields();
+					responseMessages = new String[messages.length];
+
+					for (int i = 0; i < messages.length; i++) {
+						responseMessages[i] = messages[i].getString();
+					}
+				}
+
+				message = response.getModel().getInstance().getRspRc()
+						.getString()
+						+ " - "
+						+ response.getModel().getInstance().getRspMessage();
+
+				responseObj.setReturnCode(response.getModel().getInstance()
+						.getRspRc().getString());
+				responseObj.setReturnMessages(responseMessages);
+
+			} catch (Exception e) {
+				message = e.getMessage();
+				e.printStackTrace();
+			}
+
+		}
+
+		responseObj.setReturnMessage(message);
+
+		return responseObj;
+	}
+	
+	*/
+
+	private static void setResponseAttributtes(ChangeResponse responseObject,
+			CreateglcTEGResponse smResponse) {
+
+		// Parse the responses
+		ResponseFields_type0 responses = smResponse.getModel().getInstance()
+				.getResponseFields();
+
+		if (responses != null) {
+			StringType[] messages = responses.getResponseFields();
+
+			// Map Fields
+			for (int i = 0; i < messages.length; i++) {
+				String[] array = messages[i].getString().split("=");
+
+				if (array.length == 2) {
+					// ID
+					if (array[0].equalsIgnoreCase("ChangeId")) {
+						responseObject.setRsaChangeId(array[1]);
+					}
+
+					/*
+					if (array[0].equalsIgnoreCase("attachment")) {
+						String attachmentStr = array[1];
+						int idx = attachmentStr.indexOf("||DELIM||");
+						if (idx > -1) {
+							String filename = attachmentStr.substring(0, idx);
+							// System.out.println("PK:" + filename + "END");
+							String attachmentData = attachmentStr
+									.substring(idx + 9);
+							// System.out.println("PK:" + attachmentData + "END");
+
+							// TODO
+							String[] filenames = new String[1];
+							filenames[0] = filename;
+							try {
+								byte[] binData = new sun.misc.BASE64Decoder()
+										.decodeBuffer(attachmentData);
+								byte[][] binDatas = new byte[1][binData.length];
+								binDatas[0] = binData;
+								responseObject.setAttachmentDatas(binData);
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							responseObject.setFilenames(filenames);
+
+						}
+					}
+					*/
+				}
+			}
+		}
+
+		// Parse the messages
+		MessageType[] messagesType = smResponse.getMessages().getMessage();
+		String[] responseMessages = new String[messagesType.length];
+
+		for (int i = 0; i < messagesType.length; i++) {
+			responseMessages[i] = messagesType[i].getString();
+		}
+
+		responseObject.setReturnCode(smResponse.getModel().getInstance()
+				.getRspRc().getString());
+		responseObject.setReturnMessages(responseMessages);
+		responseObject.setReturnMessage(""
+				+ smResponse.getModel().getInstance().getRspMessage());
+
+	}
+
+	private static ChangeResponse loadProperties() {
+		log.debug("TegFacadeChange::loadProperties --> START");
+		ChangeResponse responseObj = new ChangeResponse();
+		responseObj.setReturnCode("0");
+
+
+		
+		File file = new File(propertiesFile);
+		log.debug("TegFacadeChange::loadProperties --> file = " + file);
+
+		if (!file.exists()) {
+			responseObj.setReturnCode("-1");
+			responseObj
+					.setReturnMessages(new String[] { "No properties file" });
+			responseObj.setReturnMessage("No properties file");
+			return responseObj;
+		} else {
+			Properties properties = new Properties();
+			try {
+
+				log.debug("TegFacadeChange::loadProperties --> Loading properties...");
+
+				// BufferedReader reader = new BufferedReader(new
+				// FileReader(file));
+				// String line = null;
+				//
+				// while ((line=reader.readLine())!=null) {
+				// log.debug("TegFacadeChange::loadProperties --> file = " +
+				// file);
+				//
+				// if (line.contains("=") && !line.startsWith("#")) {
+				// log.debug("TegFacadeChange::loadProperties --> adding property "
+				// + line);
+				// String[] array = line.split("=");
+				//
+				// if (array.length>1) {
+				// properties.put(array[0], (array[1]==null?"":array[1]));
+				// }
+				// }
+				// }
+				//
+				//
+				//
+
+				properties.load(new FileInputStream(file));
+
+				smHost = properties.getProperty("smHost");
+				smPort = properties.getProperty("smPort");
+				user = properties.getProperty("user");
+				// Support for blank password
+				password = (properties.getProperty("password") == null ? ""
+						: properties.getProperty("password"));
+
+			} catch (FileNotFoundException e) {
+				responseObj.setReturnCode("-1");
+				responseObj
+						.setReturnMessages(new String[] { "Could not locate properties file" });
+				responseObj
+						.setReturnMessage("Could not locate properties file");
+				e.printStackTrace();
+
+			} catch (IOException e) {
+				responseObj.setReturnCode("-1");
+				responseObj
+						.setReturnMessages(new String[] { "Could read properties file" });
+				responseObj.setReturnMessage("Could read properties file");
+				e.printStackTrace();
+			}
+
+		}
+		log.debug("TegFacadeChange::loadProperties --> smHost = " + smHost);
+		log.debug("TegFacadeChange::loadProperties --> smPort = " + smPort);
+		log.debug("TegFacadeChange::loadProperties --> user = " + user);
+		log.debug("TegFacadeChange::loadProperties --> END");
+
+		return responseObj;
+
+		
+	
+	}
+
+}
