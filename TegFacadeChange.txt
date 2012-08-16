@@ -20,7 +20,7 @@ import dk.globicon.deg.webservice.TEGClient;
 import dk.globicon.teg.environment.TegFacadeContextListener;
 
 public class TegFacadeChange {
-	public static final String CVS_ID = "$Id: TegFacadeChange.java,v 1.5 2012-05-02 07:30:43 glc Exp $";
+	public static final String CVS_ID = "$Id: TegFacadeChange.java,v 1.5 2012-05-02 07:40:43 glc Exp $";
 	public static Logger log = Logger.getLogger(TegFacadeChange.class);
 	private static String propertiesFile = TegFacadeContextListener.systemContextPath
 			+ "/WEB-INF/classes/connection.properties";
